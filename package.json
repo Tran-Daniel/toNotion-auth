@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "@google-cloud/firestore": "4.15.1",
+    "Base64": "^1.1.0",
     "dotenv": "^10.0.0"
   },
   "devDependencies": {},
