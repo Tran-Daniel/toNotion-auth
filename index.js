@@ -8,6 +8,10 @@
  // Use your project ID here
  const PROJECTID = 'studious-bit-325802';
  const COLLECTION_NAME = 'jiggle-auth';
+
+ // URLs
+ const REDIRECT_URI = "https://us-central1-studious-bit-325802.cloudfunctions.net/notion-auth";
+ const NOTION_TOKEN_URI = "https://api.notion.com/v1/oauth/token";
  
  const firestore = new Firestore({
    projectId: PROJECTID,
@@ -18,57 +22,66 @@
    // keyFilename: '/cred/cloud-functions-firestore-000000000000.json',
  });
 
-let dotenv = require("dotenv");
-let Base64 = require("Base64");
+const dotenv = require("dotenv");
+const Base64 = require("Base64");
+const axios = require("axios");
+
 
 // if .env file is located in root directory
 dotenv.config();
 
 exports.toNotionAuth = async (req, res) => {
-
   res.set('Access-Control-Allow-Origin', '*');
 
   if (req.query.code && req.query.code.length) {
     const authHeader = Base64.btoa(process.env.NOTION_CLIENT_ID + ":" + process.env.NOTION_CLIENT_SECRET);
-    const accessTokenRequestObj = {
+    const tokenRequest = {
       "grant_type": "authorization_code",
       "code": req.query.code,
-      "redirect_uri": "https://us-central1-studious-bit-325802.cloudfunctions.net/notion-auth",
+      "redirect_uri": REDIRECT_URI,
     };
-    res.set('Authorization', 'Basic ' + authHeader)
-    res.status(200).send(accessTokenRequestObj);
-  } else {
-    if (req.method === 'OPTIONS') {
-      // Send response to OPTIONS requests
-      res.
-      res.set('Access-Control-Allow-Methods', 'GET');
-      res.set('Access-Control-Allow-Headers', 'Content-Type');
-      res.set('Access-Control-Max-Age', '3600');
-      res.status(204).send('');
-    } else if (req.method === 'POST') {
-      // store/insert a new document
-      const data = (req.body) || {};
-      const ttl = Number.parseInt(data.ttl);
-      const ciphertext = (data.ciphertext || '')
-        .replace(/[^a-zA-Z0-9\-_!.,; ']*/g, '')
-        .trim();
-      const created = new Date().getTime();
-  
-      // .add() will automatically assign an ID
-      return firestore.collection(COLLECTION_NAME).add({
-        created,
-        ttl,
-        ciphertext
-      }).then(doc => {
-        console.info('stored new doc id#', doc.id);
-        return res.status(200).send(doc);
-      }).catch(err => {
+
+    axios.post(NOTION_TOKEN_URI, tokenRequest, {
+      headers: {
+        'Authorization': 'Basic ' + authHeader
+       }
+    }).then((tokenObj) => {
+        console.log("THEN!");
+        console.log(tokenObj);
+        return res.status(200).json(tokenObj.data);
+      })
+      .catch((err) => {
+        console.error("ERROR!");
         console.error(err);
-        return res.status(404).send({
-          error: 'unable to store',
-          err
-        });
+        return res.status(404).json({
+          error: 'error while sending token request to Notion',
+          err,
+        })
       });
-    }
+
+  } else if (req.method === 'POST') {
+    // store/insert a new document
+    const data = (req.body) || {};
+    const ttl = Number.parseInt(data.ttl);
+    const ciphertext = (data.ciphertext || '')
+      .replace(/[^a-zA-Z0-9\-_!.,; ']*/g, '')
+      .trim();
+    const created = new Date().getTime();
+
+    // .add() will automatically assign an ID
+    return firestore.collection(COLLECTION_NAME).add({
+      created,
+      ttl,
+      ciphertext
+    }).then(doc => {
+      console.info('stored new doc id#', doc.id);
+      return res.status(200).send(doc);
+    }).catch(err => {
+      console.error(err);
+      return res.status(404).send({
+        error: 'unable to store',
+        err
+      });
+    });
   }
 };
