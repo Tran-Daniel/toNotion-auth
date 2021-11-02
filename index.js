@@ -33,7 +33,7 @@ exports.toNotionAuth = async (req, res) => {
     const accessTokenRequestObj = {
       "grant_type": "authorization_code",
       "code": req.query.code,
-      "redirect_uri": "https://northamerica-northeast1-studious-bit-325802.cloudfunctions.net/toNotionAuth",
+      "redirect_uri": "https://us-central1-studious-bit-325802.cloudfunctions.net/notion-auth",
     };
     res.set('Authorization', 'Basic ' + authHeader)
     res.status(200).send(accessTokenRequestObj);
