@@ -13,8 +13,13 @@ gcloud init
 
 // Login and navigate to the project
 
-gcloud functions deploy notion-auth --entry-point toNotionAuth --runtime nodejs14 --trigger-http
+gcloud functions deploy notion-auth --entry-point toNotionAuth --env-vars-file .env.yaml --runtime nodejs14 --trigger-http
 ```
+
+You will also need an .env.yaml file with the following values:
+
+NOTION_CLIENT_ID
+NOTION_CLIENT_SECRET
 
 ## links
 

@@ -46,42 +46,35 @@ exports.toNotionAuth = async (req, res) => {
         'Authorization': 'Basic ' + authHeader
        }
     }).then((tokenObj) => {
-        console.log("THEN!");
-        console.log(tokenObj);
-        return res.status(200).json(tokenObj.data);
+        console.info('successfully retrieved token');
+
+        // create token object in Firestore
+        const created = new Date().getTime();
+        // .add() will automatically assign an ID
+        return firestore.collection(COLLECTION_NAME).add({
+          created,
+          ...tokenObj.data,
+        }).then(doc => {
+          console.info('successfully stored token in db with id#', doc.id);
+          return res.status(200).json(doc);
+        }).catch(err => {
+          console.error(err);
+          return res.status(404).json({
+            error: 'error while storing token',
+            err
+          });
+        });
       })
       .catch((err) => {
-        console.error("ERROR!");
         console.error(err);
         return res.status(404).json({
           error: 'error while sending token request to Notion',
           err,
         })
       });
-
-  } else if (req.method === 'POST') {
-    // store/insert a new document
-    const data = (req.body) || {};
-    const ttl = Number.parseInt(data.ttl);
-    const ciphertext = (data.ciphertext || '')
-      .replace(/[^a-zA-Z0-9\-_!.,; ']*/g, '')
-      .trim();
-    const created = new Date().getTime();
-
-    // .add() will automatically assign an ID
-    return firestore.collection(COLLECTION_NAME).add({
-      created,
-      ttl,
-      ciphertext
-    }).then(doc => {
-      console.info('stored new doc id#', doc.id);
-      return res.status(200).send(doc);
-    }).catch(err => {
-      console.error(err);
-      return res.status(404).send({
-        error: 'unable to store',
-        err
-      });
+  } else {
+    return res.status(404).json({
+      error: 'Not found'
     });
   }
 };
