@@ -58,7 +58,7 @@ exports.toNotionAuth = async (req, res) => {
           console.info('successfully stored token in db with id#', doc.id);
           // set the client's cookie to the document id to associate the client to the access token on future requests
           // TODO: rather than the doc ID, an encryption scheme should be used here instead
-          res.setHeader('Set-Cookie', ['doc_id=' + doc.id])
+          res.setHeader('Set-Cookie', [`doc_id=${doc.id}; SameSite=None; Secure`])
 
           return res.status(200).json({
             message: 'Login successful',
