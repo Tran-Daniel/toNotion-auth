@@ -31,7 +31,7 @@ const axios = require("axios");
 dotenv.config();
 
 exports.toNotionAuth = async (req, res) => {
-  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Origin', 'https://www.notion.so');
 
   if (req.query.code && req.query.code.length) {
     const authHeader = Base64.btoa(process.env.NOTION_CLIENT_ID + ":" + process.env.NOTION_CLIENT_SECRET);
@@ -56,7 +56,13 @@ exports.toNotionAuth = async (req, res) => {
           ...tokenObj.data,
         }).then(doc => {
           console.info('successfully stored token in db with id#', doc.id);
-          return res.status(200).json(doc);
+          // set the client's cookie to the document id to associate the client to the access token on future requests
+          // TODO: rather than the doc ID, an encryption scheme should be used here instead
+          res.setHeader('Set-Cookie', ['doc_id=' + doc.id])
+
+          return res.status(200).json({
+            message: 'Login successful',
+          });
         }).catch(err => {
           console.error(err);
           return res.status(404).json({

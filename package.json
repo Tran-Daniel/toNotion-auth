@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "@google-cloud/firestore": "4.15.1",
+    "@google-cloud/functions-framework": "^1.9.0",
     "Base64": "^1.1.0",
     "axios": "^0.24.0",
     "dotenv": "^10.0.0"
@@ -15,7 +16,9 @@
     "eslint-plugin-import": "^2.25.2"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "debug": "node --inspect node_modules/@google-cloud/functions-framework --target=toNotionAuth",
+    "deploy": "gcloud functions deploy notion-auth --entry-point toNotionAuth --env-vars-file .env.yaml --runtime nodejs14 --trigger-http"
   },
   "repository": {
     "type": "git",

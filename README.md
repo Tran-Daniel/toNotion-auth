@@ -21,6 +21,10 @@ You will also need an .env.yaml file with the following values:
 NOTION_CLIENT_ID
 NOTION_CLIENT_SECRET
 
+## Debugging
+
+`npm run debug`
+
 ## links
 
 https://cloud.google.com/community/tutorials/cloud-functions-firestore
